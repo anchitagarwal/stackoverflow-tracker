@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+
+  "name": "StackOverflow tracker",
+  "description": "This extension tracks the actions of user while using StackOverflow",
+  "version": "1.0",
+
+  "permissions": [
+    "activeTab", "tabs", "http://*/*"
+  ],
+
+  "background":
+  {
+      "scripts": ["jquery.js", "background.js"]
+  },
+
+  "content_scripts" : [{
+        "matches" : ["https://stackoverflow.com/*"],
+        "js" : ["jquery.js", "contentscript.js"]
+    }],
+
+  "web_accessible_resources": ["background.js"]
+}

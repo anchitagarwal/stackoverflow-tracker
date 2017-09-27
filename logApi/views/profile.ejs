@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+    <title>Profile</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <style>
+        body        { padding-top:30px; word-wrap:break-word; }
+    </style>
+    <style type="text/css">
+        .bs-callout {
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #eee;
+            border-left-width: 5px;
+            border-radius: 3px;
+        }
+        .bs-callout h4 {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .bs-callout p:last-child {
+            margin-bottom: 0;
+        }
+        .bs-callout code {
+            border-radius: 3px;
+        }
+        .bs-callout+.bs-callout {
+            margin-top: -5px;
+        }
+        .bs-callout-info {
+            border-left-color: #5bc0de;
+        }
+        .bs-callout-info h4 {
+            color: #5bc0de;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h3><span class="label label-default">Hi, <%= username %></span></h3>
+
+    <div class="jumbotron text-center">
+        <h1><span class="fa fa-user"></span> Profile Page</h1>
+        <br>
+        <a href="https://stackoverflow.com/questions/tagged/java?sort=frequent&pageSize=15" target="_blank" class="btn btn-primary btn-lg">StackOverflow</a>
+        &nbsp;
+        &nbsp;
+        <a href="/logout" class="btn btn-danger btn-lg">Logout</a>
+    </div>
+
+    <div class="row">
+
+        <!-- LOCAL INFORMATION -->
+        <div class="col-sm-6">
+            <form role="form" action="/logs" method="post">
+                <input type="hidden" name="username" id="username" class="form-control input-lg">
+                <input type="submit" class="btn btn-lg btn-warning btn-block" value="View Logs">
+            </form>
+            <br>
+            <div class="well">
+                <h3><span class="glyphicon glyphicon-time"></span> Login History</h3>
+                <br>
+                <table class="table table-bordered table-inverse table-hover table-sm">
+                	<tbody>
+                		<tr>
+                			<th><center>Date</center></th>
+                			<th><center>Day</center></th>
+                			<th><center>Time</center></th>
+                		</tr>
+                	</tbody>
+                </table>
+                <script type="text/javascript">
+                	var historyList = "<%= historyList %>";
+                	data = historyList.split(',')
+                	jsonData = JSON.stringify(data)
+                	for(var i = data.length-1; i >= 0; i--) {
+                		// console.log(data[i]);
+                		day = data[i].split(' ')[0]
+                		date = data[i].split(' ')[1] + " " + data[i].split(' ')[2] + " " + data[i].split(' ')[3]
+                		time = data[i].split(' ')[4] + " " + data[i].split(' ')[5] + " " + data[i].split(' ')[6]
+                		tr = $('<tr/>');
+                		tr.append("<td>" + date + "</td>")
+                		tr.append("<td>" + day + "</td>")
+                		tr.append("<td>" + time + "</td>")
+                		$('table').append(tr);
+                	}
+                </script>
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="bs-docs-section">
+                <div class="bs-callout bs-callout-info">
+                    <h1 style="font-weight:normal;"><span class="glyphicon glyphicon-pencil"></span> Logs Rationale</h1>
+                    <hr />
+                    <p>
+                        I've decided to log the following actions:
+                        <ul>
+                            <li>Click on question</li>
+                            <li>Click on tag</li>
+                            <li>Search</li>
+                            <li>Click on question</li>
+                            <li>Post answer</li>
+                            <li>Comment</li>
+                            <li>Ask question</li>
+                            <li>Vote up</li>
+                            <li>Vote down</li>
+                            <li>User info</li>
+                            <li>Jobs</li>
+                            <li>Favorite</li>
+                        </ul>
+                    </p>
+                    <p>
+                        The rationale for logging these activities is that it helps in understanding
+                        users' behavior and how they interact with StackOverflow - whether they spend
+                        more time browsing the questions or they are more active posting answers. These 
+                        logs help in understanding the expertise of users' in a way. Also, it helps 
+                        in understanding the time one spends on different pages.
+                    </p>
+                    <p>
+                        I believe these logs will help in analyzing the usage of StackOverflow by majority 
+                        of the users and some nuances.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>
