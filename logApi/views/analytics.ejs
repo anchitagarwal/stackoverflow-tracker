@@ -2,13 +2,15 @@
 <html>
 <head>
     <title>User Analytics</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+    <script src="https://codepen.io/anon/pen/aWapBE.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
-    <!-- <link rel="stylesheet" type="text/css" href="css/style.css"> -->
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="https://codepen.io/anon/pen/aWapBE.js"></script>
     <style>
         body        { padding-top:30px; word-wrap:break-word; }
     </style>
@@ -39,6 +41,24 @@
         .bs-callout-info h4 {
             color: #5bc0de;
         }
+        .modal {
+          text-align: center;
+          padding: 0;
+        }
+
+        .modal:before {
+          content: '';
+          display: inline-block;
+          height: 100%;
+          vertical-align: middle;
+          margin-right: -4px;
+        }
+
+        .modal-dialog {
+          display: inline-block;
+          text-align: center;
+          vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -52,60 +72,162 @@
         <a href="/profile" class="btn btn-primary btn-lg">Profile</a>
     </div>
 
-    <div class="row">
-
-        <canvas id="pie-chart" width="800" height="450"></canvas>
+    <h2><span class="fa fa-fire"></span> User Activity Heatmap</h2>
+    <blockquote class="blockquote">
+        <p style="font-size: 15px;" class="lead">
+            This vizualization is the core of user's activity. This heatmap of user activity is divided into grids with
+            rows as time of day, i.e. morning, day, evening and night, and the columns represents the days of a week.
+            Each grid is occupied by a circle whose radius reflects the amount of activities perfomed by the user on that 
+            specific time of day. This vizualization helps the user to understand his activity pattern on StackOverflow and 
+            can further help the user to organize his/her time more efficiently in the future.
+        </p>
+        <p style="font-size: 15px;" class="lead">
+            <b>BONUS:</b> As a bonus, there is an interesting interaction built-in the grid. Whenever a user clicks on the circle, 
+            a popup opens up containing a radar graph. The radar graph provides a deeper insight into what the user is doing 
+            in that specific time period.
+        </p>
+    </blockquote>
+    <div class="row well">
         <canvas id="heatmap" width="800" height="400"></canvas>
+    </div>
+
+    <div><h2><span class="fa fa-pie-chart"></span> Tags Explored</h2></div>
+    <blockquote class="blockquote">
+        <p style="font-size: 15px;" class="lead">
+            This vizualization is about the most explored tags by a user. This is represented using a pie-chart
+            that helps a user get an insight about his area of interests and/or expertise. The vizualization is done
+            by tracking the tags that a user click while browsing StackOverflow. There are 3 interactions provided with 
+            this chart to view all-time high tags, top 5 and top 10 tags. This filtering further helps user in managing
+            his/her interests and knowlesdge.
+        </p>
+    </blockquote>
+    <div class="row well">
+        
+        <div id="pie-chart-div" style="margin-top: 40px;">
+            <canvas id="pie-chart" width="800" height="450"></canvas>
+        </div>
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" id="all" onclick="tagPie(this.id)" class="btn btn-secondary">All time</button>
+            <button type="button" id="top5" onclick="tagPie(this.id)" class="btn btn-secondary">Top 5</button>
+            <button type="button" id="top10" onclick="tagPie(this.id)" class="btn btn-secondary">Top 10</button>
+        </div>
+
+    </div>
+
+    <h2><span class="fa fa-balance-scale"></span> Activity Comparison</h2>
+    <blockquote class="blockquote">
+        <p style="font-size: 15px;" class="lead">
+            This graph compares the usage of a user with the average of other users. There are multiple criterion on which 
+            the user is compared. The amount of time user spends browsing question, or the jobs they have explored. These insights 
+            helps the user to understand what the community is doing and what the current trend is. This graph can be further enhanced in the future
+            to incorporate more minute details regarding the community knowledge. This was done by comparing the user statistics with the average of 
+            community. The line graph represents the user activities, while the bar graph is the average.
+        </p>
+    </blockquote>
+    <div class="row well">
+        <div id="mixed-chart-div" style="margin-top: 40px;">
+            <canvas id="mixed-chart" width="800" height="450"></canvas>
+        </div>
+
+    </div>
+        
+        <!-- Modal -->
+        <div id="myModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+              <!-- <div class="modal-header">
+                <h4 class="modal-title">Modal Header</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+              </div> -->
+              <div class="modal-body">
+                <canvas id="heatmapPopup" width="400" height="400"></canvas>
+              </div>
+              <!-- <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div> -->
+            </div>
+
+          </div>
+        </div>
 
         <script type="text/javascript">
+            var logUser = "<%= logUser %>";
             var logType = "<%= logType %>";
             var logTime = "<%= logTime %>";
             var logHTML = "<%= logHTML %>";
+            var currentUser = "<%= username %>";
+            var userData = new Array(logUser.split(','))
             var typeData = new Array(logType.split(','))
             var timeData = new Array(logTime.split(','))
             var htmlData = new Array(logHTML.split(','))
             var totalClicks = typeData[0].length;
 
-            var tagMap = new Map();
-            // get the frequencies of each tag
-            for (var i = 0; i < htmlData[0].length; i++) {
-                if ('click_tag'.localeCompare(typeData[0][i]) === 0) {
-                    if (tagMap.has(htmlData[0][i]))
-                        tagMap.set(htmlData[0][i], tagMap.get(htmlData[0][i]) + 1);
-                    else
-                        tagMap.set(htmlData[0][i], 1);
-                }
-            }
-            console.log(tagMap)
+            // =======================================================================================================
 
-            var tagName = new Array();
-            var tagFrequency = new Array();
-            for (var [key, value] of tagMap.entries()) {
-                tagName.push(key);
-                tagFrequency.push(value);
-            }
+            function tagPie(id) {
 
-            // pie chart for tags
-            new Chart(document.getElementById("pie-chart"), {
-                type: 'pie',
-                data: {
-                  labels: tagName,
-                  datasets: [{
-                    label: "Tags",
-                    // backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
-                    backgroundColor: palette('tol-dv', htmlData[0].length).map(function(hex) {
-                        return '#' + hex;
-                    }),
-                    data: tagFrequency
-                  }]
-                },
-                options: {
-                  title: {
-                    display: true,
-                    text: 'Tags explored by user'
-                  }
+                var chart1 = document.getElementById('pie-chart-div');
+                chart1.innerHTML = '&nbsp;';
+                $('#pie-chart-div').append('<canvas id="pie-chart" width="800" height="450"><canvas>');
+                var ctx1 = $("#pie-chart").get(0).getContext("2d");
+
+                var tagMap = new Map();
+                // get the frequencies of each tag
+                for (var i = 0; i < htmlData[0].length; i++) {
+                    // console.log(userData[0][i])
+                    if ('click_tag'.localeCompare(typeData[0][i]) === 0 && currentUser.localeCompare(userData[0][i]) === 0) {
+                        if (tagMap.has(htmlData[0][i]))
+                            tagMap.set(htmlData[0][i], tagMap.get(htmlData[0][i]) + 1);
+                        else
+                            tagMap.set(htmlData[0][i], 1);
+                    }
                 }
+
+                if (id === 'all')
+                    var filteredData = getNFreq(tagMap, -1)
+                else if (id === 'top5')
+                    var filteredData = getNFreq(tagMap, 5)
+                else if (id === 'top10')
+                    var filteredData = getNFreq(tagMap, 10)
+
+                var tagName = new Array();
+                var tagFrequency = new Array();
+                for (var [key, value] of filteredData.entries()) {
+                    tagName.push(key);
+                    tagFrequency.push(value);
+                }
+
+                // pie chart for tags
+                new Chart(ctx1, {
+                    type: 'pie',
+                    data: {
+                      labels: tagName,
+                      datasets: [{
+                        label: "Tags",
+                        // backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+                        backgroundColor: palette('tol-dv', htmlData[0].length).map(function(hex) {
+                            return '#' + hex;
+                        }),
+                        data: tagFrequency
+                      }]
+                    },
+                    options: {
+                      title: {
+                        display: true,
+                        text: 'Tags explored by user'
+                      }
+                    }
+                });
+            }
+            $(document).ready(function() {
+                tagPie("all");
             });
+
+            // =======================================================================================================
 
             // heatmap for user usage
             var xCords = [['Sun', 50],['Mon', 150],['Tue', 250],['Wed', 350],['Thu', 450],['Fri', 550],['Sat', 650]];
@@ -124,40 +246,42 @@
             // get frequencies for each log type
             var freqMap = new Map();
             for (var i = 0; i < typeData[0].length; i++) {
-                var day = timeData[0][i].split(' ')[0]
-                var time = timeData[0][i].split(' ')[4]
-                var hour = time.split(':')[0]
-                var timeOfDay = '';
-                var clickType = typeData[0][i];
+                if (currentUser.localeCompare(userData[0][i]) === 0) {
+                    var day = timeData[0][i].split(' ')[0]
+                    var time = timeData[0][i].split(' ')[4]
+                    var hour = time.split(':')[0]
+                    var timeOfDay = '';
+                    var clickType = typeData[0][i];
 
-                if (hour >= 6 && hour < 11)
-                    timeOfDay = 'Morning';
-                else if (hour >= 11 && hour < 17)
-                    timeOfDay = 'Day';
-                else if (hour >= 17 && hour < 22)
-                    timeOfDay = 'Evening';
-                else
-                    timeOfDay = 'Night';
+                    if (hour >= 0 && hour < 9)
+                        timeOfDay = 'Morning';
+                    else if (hour >= 9 && hour < 15)
+                        timeOfDay = 'Day';
+                    else if (hour >= 15 && hour < 21)
+                        timeOfDay = 'Evening';
+                    else
+                        timeOfDay = 'Night';
 
-                var row = [[timeOfDay, new Map([[clickType, 1]])]]
-                row = new Map(row)
+                    var row = [[timeOfDay, new Map([[clickType, 1]])]]
+                    row = new Map(row)
 
-                if (freqMap.has(day)) {
-                    if (freqMap.get(day).has(timeOfDay)) {
-                        if (freqMap.get(day).get(timeOfDay).has(clickType)) {
-                            var tmp = freqMap.get(day).get(timeOfDay).get(clickType);
-                            freqMap.get(day).get(timeOfDay).set(clickType, tmp+1);
+                    if (freqMap.has(day)) {
+                        if (freqMap.get(day).has(timeOfDay)) {
+                            if (freqMap.get(day).get(timeOfDay).has(clickType)) {
+                                var tmp = freqMap.get(day).get(timeOfDay).get(clickType);
+                                freqMap.get(day).get(timeOfDay).set(clickType, tmp+1);
+                            }
+                            else {
+                                freqMap.get(day).get(timeOfDay).set(clickType, 1);
+                            }
                         }
                         else {
-                            freqMap.get(day).get(timeOfDay).set(clickType, 1);
+                            freqMap.get(day).set(timeOfDay, new Map([[clickType, 1]]))
                         }
                     }
                     else {
-                        freqMap.get(day).set(timeOfDay, new Map([clickType, 1]))
+                        freqMap.set(day, row)
                     }
-                }
-                else {
-                    freqMap.set(day, row)
                 }
             }
 
@@ -166,7 +290,7 @@
                 datasets: []
             };
 
-            var colorPalette = palette('cb-PuBuGn', 4).map(function(hex) {
+            var colorPalette = palette('cb-Dark2', 4).map(function(hex) {
                 return '#' + hex;
             });
             var paletteMap = new Map();
@@ -184,7 +308,7 @@
                     datasetRowData = [{
                         x: xCords.get(key1),
                         y: yCords.get(key2),
-                        r: (clicks * 100) / totalClicks
+                        r: (clicks * 50) / totalClicks
                     }];
                     datasetRow.label = [key2];
                     datasetRow.data = datasetRowData;
@@ -196,7 +320,7 @@
             // console.log(data)
 
             var ctx = document.getElementById("heatmap").getContext('2d');
-            new Chart(ctx, {
+            var heatmapChart = new Chart(ctx, {
                 type: 'bubble',
                 data: data,
                 options: {
@@ -268,9 +392,161 @@
                    }
                 }]
             });
-        </script>
 
-    </div>
+            $("#heatmap").click(
+                function(event) {
+                    // var activePoints = heatmapChart.getElementsAtEvent(event);
+                    var activePoints = heatmapChart.lastActive;
+                    var pointDetails = heatmapChart.data.datasets[activePoints[0]._datasetIndex].data[activePoints[0]._index];
+                    var x = pointDetails.x;
+                    var y = pointDetails.y;
+                    var pointDay = getKeyByValue(xCords, x);
+                    var pointTimeOfDay = getKeyByValue(yCords, y);
+                    var pointDetails = freqMap.get(pointDay).get(pointTimeOfDay)
+                    // var topFive = getNFreq(pointDetails, 5);
+                    var labels = ['Tags', 'Questions', 'Jobs', 'Favorites', 'Votes']
+                    var radarData = []
+                    radarData.push(pointDetails.get('click_tag') % 6.0)
+                    radarData.push(pointDetails.get('click_question') % 6.0)
+                    radarData.push(pointDetails.get('job') % 6.0)
+                    radarData.push(pointDetails.get('favorite') % 6.0)
+                    radarData.push(pointDetails.get('thumb_up_down') % 6.0)
+                    // var total = 0
+                    // for (var i of radarData) {
+                    //     if (Number.isInteger(i))
+                    //         total += i;
+                    // }
+                    // console.log(radarData)
+                    // console.log(total)
+                    for (var i = 0; i < radarData.length; i++)
+                        if (isNaN(radarData[i]))
+                            radarData[i] = 0;
+                    var label = pointDay + " " + pointTimeOfDay + " activity on a scale of 0-5"
+                    var ctx = document.getElementById("heatmapPopup").getContext('2d'); 
+                    var heatmapPopupChart = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: label,
+                                    fill: true,
+                                    backgroundColor: "rgba(102,194,165,0.2)",
+                                    borderColor: "rgba(102,194,165,1)",
+                                    pointBorderColor: "#fff",
+                                    pointBackgroundColor: "rgba(102,194,165,1)",
+                                    data: radarData
+                                }
+                            ]
+                        },
+                        options: {
+                            title: {
+                                display: true,
+                                text: 'Distribution in user activity'
+                            },
+                            scales : {
+                                ticks : {
+                                    beginAtZero : true,
+                                    max : 5
+                                }
+                            },
+                        }
+                    });
+                    $("#myModal").modal('show');
+                }
+            );
+
+            function getKeyByValue(map, value) {
+                for (var [k, v] of map.entries())
+                    if (v === value)
+                        return k;
+            }
+
+            function getNFreq(map, n) {
+                if (n === -1)
+                    return map;
+                var k = [];
+                for (var x of map)
+                    k.push(x);
+                if (n > k.length)
+                    return map;
+                k.sort(function(x, y) {
+                    return x[1] > y[1] ? -1 : x[1] < y[1] ? 1 : 0;
+                });
+
+                return new Map(k.slice(0, n));
+            }
+
+            // =======================================================================================================
+
+            var avgVal = [0,0,0,0,0];
+            var userVal = [0,0,0,0,0];
+            var uniqueUsers = new Set();
+            for (var i = 0; i < userData[0].length; i++) {
+                uniqueUsers.add(userData[0][i])
+            }
+            var numberUsers = uniqueUsers.size
+
+            for (var i = 0; i < userData[0].length; i++) {
+                if ('click_question'.localeCompare(typeData[0][i]) === 0) {
+                    avgVal[0] += 1;
+                    if (currentUser.localeCompare(userData[0][i]) === 0)
+                        userVal[0] += 1;
+                }
+                if ('click_tag'.localeCompare(typeData[0][i]) === 0) {
+                    avgVal[1] += 1;
+                    if (currentUser.localeCompare(userData[0][i]) === 0)
+                        userVal[1] += 1;
+                }
+                if ('comment'.localeCompare(typeData[0][i]) === 0) {
+                    avgVal[2] += 1;
+                    if (currentUser.localeCompare(userData[0][i]) === 0)
+                        userVal[2] += 1;
+                }
+                if ('job'.localeCompare(typeData[0][i]) === 0) {
+                    avgVal[3] += 1;
+                    if (currentUser.localeCompare(userData[0][i]) === 0)
+                        userVal[3] += 1;
+                }
+                if ('favorite'.localeCompare(typeData[0][i]) === 0) {
+                    avgVal[4] += 1;
+                    if (currentUser.localeCompare(userData[0][i]) === 0)
+                        userVal[4] += 1;
+                }
+            }
+
+            for (var i = 0; i < avgVal.length; i++)
+                avgVal[i] = avgVal[i] / numberUsers
+
+            var ctx2 = document.getElementById("mixed-chart").getContext('2d');
+            var mixedChart = new Chart(ctx2, {
+                type: 'bar',
+                    data: {
+                        labels: ["Questions visited", "Tags explored", "Comments", "Jobs", "Favorites"],
+                        datasets: [{
+                            label: "User",
+                            type: "line",
+                            borderColor: "#8e5ea2",
+                            data: userVal,
+                            fill: false
+                        }, {
+                            label: "Average",
+                            type: "bar",
+                            borderColor: "#3e95cd",
+                            data: avgVal,
+                            fill: false
+                        }
+                      ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: 'User activity vs. average activity:'
+                        },
+                        legend: { display: true }
+                    }
+            });
+        </script>
 
 </div>
 </body>

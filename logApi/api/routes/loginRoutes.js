@@ -72,18 +72,22 @@ module.exports = function(app, passport) {
 		var logType = [];
 		var logTime = [];
 		var logHTML = [];
-		logModel.find({ user: req.user }, function(err, docs) {
+		var logUser = [];
+		logModel.find(function(err, docs) {
 			for(var i = 0; i < docs.length; i++) {
+				var user = docs[i]['user'];
 				var type = docs[i]['type'];
 				var time = docs[i]['time'];
 				var inner_html = docs[i]['innerHTML'];
 				inner_html = inner_html.replace(/,/g, ';')
+				logUser.push(user);
 				logType.push(type);
 				logTime.push(time);
 				logHTML.push(inner_html);
 			}
 			res.render('analytics.ejs', {
 				username : req.user,
+				logUser: logUser,
 				logType: logType,
 				logTime: logTime,
 				logHTML: logHTML
