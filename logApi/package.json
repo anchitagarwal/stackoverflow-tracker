@@ -15,6 +15,7 @@
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.0.2",
+    "chart.heatmap.js": "0.0.1-alpha",
     "connect-flash": "^0.1.1",
     "cookie-parser": "^1.0.1",
     "ejs": "^0.8.8",

@@ -36,7 +36,7 @@ module.exports = function(app, passport) {
 			}
 			res.render('profile.ejs', {
 				username : req.user,
-				historyList : historyList
+				historyList : historyList				
 			});
 		});
 	});
@@ -58,6 +58,32 @@ module.exports = function(app, passport) {
 				logHTML.push(inner_html);
 			}
 			res.render('logs.ejs', {
+				username : req.user,
+				logType: logType,
+				logTime: logTime,
+				logHTML: logHTML
+			});
+		});
+	})
+
+	// User analytics page
+	app.post('/analytics', isLoggedIn, function(req, res) {
+		var logModel = require('../models/logApiModel');
+		var logType = [];
+		var logTime = [];
+		var logHTML = [];
+		logModel.find({ user: req.user }, function(err, docs) {
+			for(var i = 0; i < docs.length; i++) {
+				var type = docs[i]['type'];
+				var time = docs[i]['time'];
+				var inner_html = docs[i]['innerHTML'];
+				inner_html = inner_html.replace(/,/g, ';')
+				logType.push(type);
+				logTime.push(time);
+				logHTML.push(inner_html);
+			}
+			res.render('analytics.ejs', {
+				username : req.user,
 				logType: logType,
 				logTime: logTime,
 				logHTML: logHTML

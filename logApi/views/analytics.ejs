@@ -1,0 +1,273 @@
+<!doctype html>
+<html>
+<head>
+    <title>User Analytics</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="css/style.css"> -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://codepen.io/anon/pen/aWapBE.js"></script>
+    <style>
+        body        { padding-top:30px; word-wrap:break-word; }
+    </style>
+    <style type="text/css">
+        .bs-callout {
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #eee;
+            border-left-width: 5px;
+            border-radius: 3px;
+        }
+        .bs-callout h4 {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .bs-callout p:last-child {
+            margin-bottom: 0;
+        }
+        .bs-callout code {
+            border-radius: 3px;
+        }
+        .bs-callout+.bs-callout {
+            margin-top: -5px;
+        }
+        .bs-callout-info {
+            border-left-color: #5bc0de;
+        }
+        .bs-callout-info h4 {
+            color: #5bc0de;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h3><span class="label label-default">Hi, <%= username %></span></h3>
+
+    <div class="jumbotron text-center">
+        <h1><span class="fa fa-area-chart"></span> User Analytics</h1>
+        <br>
+        <a href="/profile" class="btn btn-primary btn-lg">Profile</a>
+    </div>
+
+    <div class="row">
+
+        <canvas id="pie-chart" width="800" height="450"></canvas>
+        <canvas id="heatmap" width="800" height="400"></canvas>
+
+        <script type="text/javascript">
+            var logType = "<%= logType %>";
+            var logTime = "<%= logTime %>";
+            var logHTML = "<%= logHTML %>";
+            var typeData = new Array(logType.split(','))
+            var timeData = new Array(logTime.split(','))
+            var htmlData = new Array(logHTML.split(','))
+            var totalClicks = typeData[0].length;
+
+            var map = new Map();
+            // get the frequencies of each tag
+            for (var i = 0; i < htmlData[0].length; i++) {
+                if (map.has(htmlData[0][i]))
+                    map.set(htmlData[0][i], map.get(htmlData[0][i]) + 1);
+                else
+                    map.set(htmlData[0][i], 1);
+            }
+            var tagName = new Array();
+            var tagFrequency = new Array();
+            for (var [key, value] of map.entries()) {
+                tagName.push(key);
+                tagFrequency.push(value);
+            }
+            
+            // pie chart for tags
+            new Chart(document.getElementById("pie-chart"), {
+                type: 'pie',
+                data: {
+                  labels: tagName,
+                  datasets: [{
+                    label: "Tags",
+                    // backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
+                    backgroundColor: palette('cb-Spectral', htmlData[0].length).map(function(hex) {
+                        return '#' + hex;
+                    }),
+                    data: tagFrequency
+                  }]
+                },
+                options: {
+                  title: {
+                    display: true,
+                    text: 'Tags explored by user'
+                  }
+                }
+            });
+
+            // heatmap for user usage
+            var xCords = [['Sun', 50],['Mon', 150],['Tue', 250],['Wed', 350],['Thu', 450],['Fri', 550],['Sat', 650]];
+            var yCords = [['Morning', 50], ['Day', 150], ['Evening', 250], ['Night', 350]];
+            xCords = new Map(xCords);
+            yCords = new Map(yCords);
+
+            var xLabels = []
+            var yLabels = []
+            for (var [key, value] of xCords)
+                xLabels.push(key)
+            for (var [key, value] of yCords)
+                yLabels.push(key)
+            yLabels.reverse();
+
+            // get frequencies for each log type
+            var freqMap = new Map();
+            for (var i = 0; i < typeData[0].length; i++) {
+                var day = timeData[0][i].split(' ')[0]
+                var time = timeData[0][i].split(' ')[4]
+                var hour = time.split(':')[0]
+                var timeOfDay = '';
+                var clickType = typeData[0][i];
+
+                if (hour >= 6 && hour < 11)
+                    timeOfDay = 'Morning';
+                else if (hour >= 11 && hour < 17)
+                    timeOfDay = 'Day';
+                else if (hour >= 17 && hour < 22)
+                    timeOfDay = 'Evening';
+                else
+                    timeOfDay = 'Night';
+
+                var row = [[timeOfDay, new Map([[clickType, 1]])]]
+                row = new Map(row)
+
+                if (freqMap.has(day)) {
+                    if (freqMap.get(day).has(timeOfDay)) {
+                        if (freqMap.get(day).get(timeOfDay).has(clickType)) {
+                            var tmp = freqMap.get(day).get(timeOfDay).get(clickType);
+                            freqMap.get(day).get(timeOfDay).set(clickType, tmp+1);
+                        }
+                        else {
+                            freqMap.get(day).get(timeOfDay).set(clickType, 1);
+                        }
+                    }
+                    else {
+                        freqMap.get(day).set(timeOfDay, new Map([clickType, 1]))
+                    }
+                }
+                else {
+                    freqMap.set(day, row)
+                }
+            }
+
+            // create data for heatmap
+            var data = {
+                datasets: []
+            };
+
+            var colorPalette = palette('cb-PuBuGn', 4).map(function(hex) {
+                return '#' + hex;
+            });
+            var paletteMap = new Map();
+            for (var i = 0; i < 4; i++) {
+                paletteMap.set(Array.from(yCords.keys())[i], colorPalette[i])
+            }
+
+            for (var [key1, value1] of freqMap.entries()) {
+                for (var [key2, value2] of value1.entries()) {
+                    var datasetRow = {};
+                    var clicks = 0;
+                    for (var [key3, value3] of value2.entries()) {
+                        clicks += value3;
+                    }
+                    datasetRowData = [{
+                        x: xCords.get(key1),
+                        y: yCords.get(key2),
+                        r: (clicks * 100) / totalClicks
+                    }];
+                    datasetRow.label = [key2];
+                    datasetRow.data = datasetRowData;
+                    datasetRow.backgroundColor = paletteMap.get(key2);
+                    data.datasets.push(datasetRow);
+                }
+            }
+
+            // console.log(data)
+
+            var ctx = document.getElementById("heatmap").getContext('2d');
+            new Chart(ctx, {
+                type: 'bubble',
+                data: data,
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Heatmap of user activity'
+                    },
+                    scales : {
+                        xAxes : [{
+                            ticks : {
+                                beginAtZero : true,
+                                max : 700
+                            }
+                        }],
+                        yAxes : [{
+                            ticks: {
+                                beginAtZero : true,
+                                max : 400,
+                                stepSize : 100
+                            }
+                        }]
+                    },
+                    layout: {
+                        padding: {
+                            left: 100,
+                            right: 0,
+                            top: 0,
+                            bottom: 0
+                        }
+                    }
+                },
+                plugins: [{
+                   beforeDraw: function(chart) {
+                      var ctx = chart.chart.ctx;
+                      var yAxis = chart.scales['y-axis-0'];
+                      var tickGap = yAxis.getPixelForTick(1) - yAxis.getPixelForTick(0);
+                      yAxis.options.ticks.fontColor = 'transparent'; // hide original tick
+                      // loop through ticks array
+                      Chart.helpers.each(yLabels, function(tick, index) {
+                         var xPos = yAxis.right;
+                         var yPos = yAxis.getPixelForTick(index);
+                         var xPadding = 10;
+                         // draw tick
+                         ctx.save();
+                         ctx.textBaseline = 'middle';
+                         ctx.textAlign = 'right';
+                         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                         ctx.fillText(tick, xPos - xPadding, yPos + tickGap / 2);
+                         ctx.restore();
+                      });
+
+                      var xAxis = chart.scales['x-axis-0'];
+                      tickGap = xAxis.getPixelForTick(1) - xAxis.getPixelForTick(0);
+                      xAxis.options.ticks.fontColor = 'transparent'; // hide original tick
+                      // loop through ticks array
+                      Chart.helpers.each(xLabels, function(tick, index) {
+                         var yPos = xAxis.bottom;
+                         var xPos = xAxis.getPixelForTick(index);
+                         var yPadding = 10;
+                         // draw tick
+                         ctx.save();
+                         ctx.textBaseline = 'middle';
+                         ctx.textAlign = 'bottom';
+                         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                         ctx.fillText(tick, xPos + tickGap / 2, yPos - yPadding);
+                         ctx.restore();
+                      });
+                   }
+                }]
+            });
+        </script>
+
+    </div>
+
+</div>
+</body>
+</html>

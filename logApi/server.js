@@ -19,6 +19,8 @@ mongoose.connect(configDB.url);
 
 require('./config/passport')(passport);
 
+app.use(express.static(__dirname + '/views'));
+
 app.use(morgan('dev')); // log every request to the console
 app.use(cookieParser()); // read cookies (needed for auth)
 app.use(bodyParser()); // get information from html forms
