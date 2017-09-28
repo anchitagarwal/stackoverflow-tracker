@@ -66,21 +66,25 @@
             var htmlData = new Array(logHTML.split(','))
             var totalClicks = typeData[0].length;
 
-            var map = new Map();
+            var tagMap = new Map();
             // get the frequencies of each tag
             for (var i = 0; i < htmlData[0].length; i++) {
-                if (map.has(htmlData[0][i]))
-                    map.set(htmlData[0][i], map.get(htmlData[0][i]) + 1);
-                else
-                    map.set(htmlData[0][i], 1);
+                if ('click_tag'.localeCompare(typeData[0][i]) === 0) {
+                    if (tagMap.has(htmlData[0][i]))
+                        tagMap.set(htmlData[0][i], tagMap.get(htmlData[0][i]) + 1);
+                    else
+                        tagMap.set(htmlData[0][i], 1);
+                }
             }
+            console.log(tagMap)
+
             var tagName = new Array();
             var tagFrequency = new Array();
-            for (var [key, value] of map.entries()) {
+            for (var [key, value] of tagMap.entries()) {
                 tagName.push(key);
                 tagFrequency.push(value);
             }
-            
+
             // pie chart for tags
             new Chart(document.getElementById("pie-chart"), {
                 type: 'pie',
@@ -89,7 +93,7 @@
                   datasets: [{
                     label: "Tags",
                     // backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850"],
-                    backgroundColor: palette('cb-Spectral', htmlData[0].length).map(function(hex) {
+                    backgroundColor: palette('tol-dv', htmlData[0].length).map(function(hex) {
                         return '#' + hex;
                     }),
                     data: tagFrequency
